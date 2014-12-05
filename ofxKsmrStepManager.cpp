@@ -16,37 +16,9 @@ void ofxKsmrStepManager::setup(int portNum, int baud){
 	serial.setup(portNum, baud);
 }
 
-void ofxKsmrStepManager::setupAll(){
-
-}
-
-void ofxKsmrStepManager::testStep(){
-	static int c = 0;
-	c++;
-
-	sendSPIByteAll(0x41);
-	int val = (200 + c % 2 * 200) * 128;
-	unsigned char data[3];
-	for (int i = 0;i < 3;i++){
-		data[i] = val & 0xFF;
-		val = val >> 8;
-	}
-
-	sendSPIByteAll(data[2]);
-	sendSPIByteAll(data[1]);
-	sendSPIByteAll(data[0]);
-}
-
 void ofxKsmrStepManager::addStepper(string name, int numStep, int SPIch){
 
 	steppers.push_back( virtualSteppingMotor(name, numStep, SPIch) );
-
-}
-
-void ofxKsmrStepManager::setStepperFlag(int num, bool enable){
-
-	if (num < 0 || num >= steppers.size()) return;
-	steppers[num].sendEnable = enable;
 
 }
 
@@ -120,42 +92,20 @@ void ofxKsmrStepManager::setupEasy(){
 
 	resetAllDevices();
 
-//	sendSPIByteAll(0xD8);
-
-//	sendSPIByteAll(0x09);//モータ停止中の電圧設定
-//	sendSPIByteAll(0xFF);
-
-//	sendSPIByteAll(0x0a);//モータ低速回転時の電圧設定
-//	sendSPIByteAll(0xFF);
-
-	sendSPIByteAll(0x0b);//加速中の電圧設定
-	sendSPIByteAll(0xFF);
-
-	sendSPIByteAll(0x0c);//減速中の電圧設定
-	sendSPIByteAll(0xFF);
-
-//	sendSPIByteAll(0x13);//オーバーカレント時の電流スレッショルド
-//	sendSPIByteAll(0x0F);
-
-//	sendSPIByteAll(0x14);//ストール時の電流スレッショルド
-//	sendSPIByteAll(0x7F);
-
 	sendSPIByteAll(0x07);//最大回転スピード
 	sendSPIByteAll(0x00);
-	sendSPIByteAll(0x05);
+	sendSPIByteAll(0x25);
 
 	sendSPIByteAll(0x05);//加速度
-	sendSPIByteAll(0x00);
-	sendSPIByteAll(0x05);
+	sendSPIByteAll(0x02);
+	sendSPIByteAll(0x20);
 
-	setMicroSteps(0);
+	sendSPIByteAll(0x06);//減速度
+	sendSPIByteAll(0x02);
+	sendSPIByteAll(0x20);
 
-//	sendSPIByteAll(0x03);
-//	sendSPIByteAll(0x00);
-//	sendSPIByteAll(0x00);
-//	sendSPIByteAll(0x00);
-	absPos(0);
-	absPos(0);
+
+	setMicroSteps(7);
 	absPos(0);
 }
 
@@ -254,4 +204,73 @@ void ofxKsmrStepManager::hardStop(){
 
 void ofxKsmrStepManager::gohome(){
 	sendSPIByteSelected(0x70);
+}
+
+void ofxKsmrStepManager::setupEasyFromPreset(ofxKsmrStepPreset preset){
+
+	resetAllDevices();
+
+	if (preset == KSMR_STEP_P_PMSA_B56D5){
+		setParam_maxSpeed(0x0025);
+		setParam_Accel(0x0220);
+		setParam_Decel(0x0220);
+	}
+
+	if (preset == KSMR_STEP_SM_42BYG011_25){
+		setParam_maxSpeed(0x0041);
+	}
+
+	setMicroSteps(7);
+	absPos(0);
+}
+
+void ofxKsmrStepManager::setParam_maxSpeed(int bit_10){
+	sendSPIByteAll(0x07);
+	unsigned char sig;
+
+	sig = (bit_10 >> 8) & 0x03;
+	sendSPIByteAll(sig);
+
+	sig = bit_10 & 0xFF;
+	sendSPIByteAll(sig);
+}
+
+void ofxKsmrStepManager::setParam_minSpeed(int bit_13){
+	sendSPIByteAll(0x08);
+
+	unsigned char sig;
+
+	sig = (bit_13 >> 8) & 31;
+	sendSPIByteAll(sig);
+
+	sig = bit_13 & 0xFF;
+	sendSPIByteAll(sig);
+}
+
+void ofxKsmrStepManager::setParam_Accel(int bit_12){
+	sendSPIByteAll(0x05);
+
+	unsigned char sig;
+
+	sig = (bit_12 >> 8) & 0x0F;
+	sendSPIByteAll(sig);
+
+	sig = bit_12 & 0xFF;
+	sendSPIByteAll(sig);
+}
+
+void ofxKsmrStepManager::setParam_Decel(int bit_12){
+	sendSPIByteAll(0x06);
+
+	unsigned char sig;
+
+	sig = (bit_12 >> 8) & 0x0F;
+	sendSPIByteAll(sig);
+
+	sig = bit_12 & 0xFF;
+	sendSPIByteAll(sig);
+}
+
+void ofxKsmrStepManager::setParam_AbsPos(int bit_22){
+	absPos(bit_22);
 }
