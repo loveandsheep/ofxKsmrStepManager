@@ -9,8 +9,11 @@
 #ifndef __sheep_ramSceneTest__ofxKsmrStepManager__
 #define __sheep_ramSceneTest__ofxKsmrStepManager__
 
+#define USE_OSC
+
 #include "ofMain.h"
 #include "virtualSteppingMotor.h"
+#include "ofxOsc.h"
 
 enum ofxKsmrStepPreset{
 	KSMR_STEP_P_PMSA_B56D5, //ShinanoKenshi
@@ -19,8 +22,13 @@ enum ofxKsmrStepPreset{
 
 class ofxKsmrStepManager{
 public:
+	ofxKsmrStepManager(){
+		useOsc = false;
+	}
+
 	void setup(string portName,int baud);
 	void setup(int portNum, int baud);
+	void setupOsc(string address, int port);
 
 	void addStepper(string name,int numStep,int SPIch);
 
@@ -33,6 +41,11 @@ public:
 	void selectStepperOne	(int ch,bool enable);
 	void setStepperAll		(bool enable);
 	void setStepperSingle	(int ch,bool enable);
+
+	void sendSPIPacketAll		(unsigned char* bytes,int length);
+	void sendSPIPacketSelected	(unsigned char* bytes,int length);
+
+	void sendSPIMultiByte	(unsigned char* bytes,int length);
 
 	void sendSPIByteAll		(unsigned char byte);
 	void sendSPIByteSingle	(unsigned char byte,int ch);
@@ -60,6 +73,10 @@ public:
 
 	vector<virtualSteppingMotor> steppers;
 	ofSerial serial;
+
+	bool			useOsc;
+	ofxOscSender	sender;
+	void sendBytesOnline(unsigned char* buffer, int length);
 };
 
 #endif /* defined(__sheep_ramSceneTest__ofxKsmrStepManager__) */
