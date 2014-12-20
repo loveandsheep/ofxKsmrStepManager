@@ -56,7 +56,7 @@ void ofxKsmrStepManager::sendSPIPacketSelected(unsigned char *bytes, int length)
 	unsigned char signals[sigLength];
 
 	int byteCount = 0;
-	for (int i = 0;i < sigLength;i+=(2+steppers.size())){
+	for (int i = 0;i <  sigLength;i+=(2+steppers.size())){
 
 		signals[i  ] = 0x02;
 		signals[i+1] = steppers.size();
@@ -141,6 +141,11 @@ virtualSteppingMotor &ofxKsmrStepManager::getMotor(string name){
 }
 
 void ofxKsmrStepManager::resetAllDevices(){
+	sendSPIByteAll(0x00);
+	sendSPIByteAll(0x00);
+	sendSPIByteAll(0x00);
+	sendSPIByteAll(0x00);
+
 	sendSPIByteAll(0xc0);
 }
 
@@ -194,7 +199,7 @@ void ofxKsmrStepManager::setStepperSingle(int ch,bool enable){
 
 void ofxKsmrStepManager::absPos(int pos){
 
-	int val = pos;
+	int val = pos * pow(2.0f,microStepInv);
 	unsigned char data[3];
 
 	for (int i = 0;i < 3;i++){
@@ -253,13 +258,46 @@ void ofxKsmrStepManager::move(int step, bool dir){
 
 }
 
+void ofxKsmrStepManager::multi_go_to(int *pos){
+
+	int signal_unitL = 2 + steppers.size();
+
+	unsigned char signal[4*signal_unitL];
+	unsigned char datas[steppers.size()][3];
+
+	for (int i = 0;i < steppers.size();i++){
+
+		int val = pos[i] * pow(2.0f,microStepInv);
+
+		for (int j = 0;j < 3;j++){
+			datas[i][j] = val & 0xFF;
+			val = val >> 8;
+		}
+
+	}
+
+	for (int i = 0;i < 4;i++){
+		signal[i*signal_unitL] = 0x02;
+		signal[i*signal_unitL + 1] = steppers.size();
+	}
+
+	for (int i = 0;i < steppers.size();i++){
+		signal[0*signal_unitL + 2 + i] = steppers[i].sendEnable ? 0x60 : 0x00;
+		signal[1*signal_unitL + 2 + i] = steppers[i].sendEnable ? datas[i][2] : 0x00;
+		signal[2*signal_unitL + 2 + i] = steppers[i].sendEnable ? datas[i][1] : 0x00;
+		signal[3*signal_unitL + 2 + i] = steppers[i].sendEnable ? datas[i][0] : 0x00;
+	}
+
+	sendSPIMultiByte(signal, 4*signal_unitL);
+}
+
 void ofxKsmrStepManager::go_to(int pos){
 
 	unsigned char sig[4];
 
 	sig[0] = 0x60;
 
-	int val = pos;
+	int val = pos * pow(2.0f,microStepInv);
 	unsigned char data[3];
 	for (int i = 0;i < 3;i++){
 		data[i] = val & 0xFF;
@@ -290,9 +328,9 @@ void ofxKsmrStepManager::setupEasyFromPreset(ofxKsmrStepPreset preset){
 	resetAllDevices();
 
 	if (preset == KSMR_STEP_P_PMSA_B56D5){
-		setParam_maxSpeed(0x0125);
-		setParam_Accel(0x0060);
-		setParam_Decel(0x0060);
+		setParam_maxSpeed(0x0075);
+		setParam_Accel(0x0010);
+		setParam_Decel(0x0010);
 		setMicroSteps(7);
 	}
 

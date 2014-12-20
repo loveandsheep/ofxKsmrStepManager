@@ -54,6 +54,7 @@ public:
 	void absPos				(int pos);
 	void run				(int speed,bool dir);
 	void move				(int step,bool dir);
+	void multi_go_to		(int* pos);
 	void go_to				(int pos);
 
 	void softStop();
