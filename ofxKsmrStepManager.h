@@ -29,6 +29,7 @@ public:
 	void setup(string portName,int baud);
 	void setup(int portNum, int baud);
 	void setupOsc(string address, int port);
+	void setupUDP(string address, int port);
 
 	void addStepper(string name,int numStep,int SPIch);
 
@@ -76,7 +77,9 @@ public:
 	ofSerial serial;
 
 	bool			useOsc;
+
 	ofxOscSender	sender;
+
 	void sendBytesOnline(unsigned char* buffer, int length);
 };
 

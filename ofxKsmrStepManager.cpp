@@ -13,7 +13,6 @@ void ofxKsmrStepManager::setupOsc(string address, int port){
 	sender.setup(address, port);
 }
 
-
 void ofxKsmrStepManager::setup(string portName, int baud){
 	serial.setup(portName, baud);
 }
@@ -329,8 +328,8 @@ void ofxKsmrStepManager::setupEasyFromPreset(ofxKsmrStepPreset preset){
 
 	if (preset == KSMR_STEP_P_PMSA_B56D5){
 		setParam_maxSpeed(0x0075);
-		setParam_Accel(0x0010);
-		setParam_Decel(0x0010);
+		setParam_Accel(0x0070);
+		setParam_Decel(0x0070);
 		setMicroSteps(7);
 	}
 
@@ -412,14 +411,29 @@ void ofxKsmrStepManager::setParam_AbsPos(int bit_22){
 
 void ofxKsmrStepManager::sendBytesOnline(unsigned char *buffer, int length){
 
-	ofxOscMessage m;
-	m.setAddress("/mtr/");
-	m.addIntArg(length);
+	if (useOsc){
+		ofxOscMessage m;
+		m.setAddress("/dp/hakoniwa/Ksmrmotor");
 
-	for (int i = 0;i < length;i++){
-		m.addIntArg(int(buffer[i]));
+		//上位8ビットにlength
+		//残り上位から順番にバイト列を格納
+		int32_t data  = 0;
+		data += (length << 24);
+
+		bool notAdd = false;
+		for (int i = 1;i < length + 1;i++){
+			data += buffer[i - 1] << (24 - 8 * i);
+			notAdd = true;
+
+			if (i % 4 == 3){
+				m.addIntArg(data);
+				data = 0;
+				notAdd = false;
+			}
+		}
+		if (notAdd) m.addIntArg(data);
+
+		sender.sendMessage(m);
 	}
-
-	sender.sendMessage(m);
 
 }
