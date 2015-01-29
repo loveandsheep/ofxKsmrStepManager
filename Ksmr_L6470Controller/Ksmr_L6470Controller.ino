@@ -1,10 +1,10 @@
 #include <SPI.h>
 #include <MsTimer2.h>
 
-#define PIN_SPI_SCK   13
 #define PIN_SPI_MOSI  11
-#define PIN_SPI_SS    10
-#define PIN_SPI_MISO  9
+#define PIN_SPI_MISO  12
+#define PIN_SPI_SCK   13
+#define PIN_SPI_SS    8
 
 #define PHASE_IDLE 0
 #define PHASE_WAITNUMBYTE 1
@@ -22,7 +22,7 @@ void setup(){
   pinMode(PIN_SPI_SS, OUTPUT);
 
   SPI.begin();
-  SPI.setDataMode(SPI_MODE3);
+  SPI.setDataMode(SPI_MODE0);
   SPI.setBitOrder(MSBFIRST);
   Serial.begin(57600);
 

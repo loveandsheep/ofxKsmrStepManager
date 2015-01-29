@@ -8,6 +8,7 @@
 
 #include "ofxKsmrStepManager.h"
 
+#pragma mark - Initialize
 void ofxKsmrStepManager::setupOsc(string address, int port){
 	useOsc = true;
 	sender.setup(address, port);
@@ -27,6 +28,7 @@ void ofxKsmrStepManager::addStepper(string name, int numStep, int SPIch){
 
 }
 
+#pragma mark - SPI Sender
 //1命令1パケットとして複数バイトを全モーターに送信する
 void ofxKsmrStepManager::sendSPIPacketAll(unsigned char *bytes, int length){
 
@@ -140,10 +142,8 @@ virtualSteppingMotor &ofxKsmrStepManager::getMotor(string name){
 }
 
 void ofxKsmrStepManager::resetAllDevices(){
-	sendSPIByteAll(0x00);
-	sendSPIByteAll(0x00);
-	sendSPIByteAll(0x00);
-	sendSPIByteAll(0x00);
+	for (int i = 0;i < 4;i++)
+		sendSPIByteAll(0x00);
 
 	sendSPIByteAll(0xc0);
 }
@@ -287,7 +287,7 @@ void ofxKsmrStepManager::multi_go_to(int *pos){
 		signal[3*signal_unitL + 2 + i] = steppers[i].sendEnable ? datas[i][0] : 0x00;
 	}
 
-	sendSPIMultiByte(signal, 4*signal_unitL);
+	sendSPIMultiByte(signal, 4 * signal_unitL);
 }
 
 void ofxKsmrStepManager::go_to(int pos){
@@ -308,6 +308,7 @@ void ofxKsmrStepManager::go_to(int pos){
 	sig[3] = data[0];
 
 	sendSPIPacketSelected(sig, 4);
+
 }
 
 void ofxKsmrStepManager::softStop(){
@@ -328,9 +329,23 @@ void ofxKsmrStepManager::setupEasyFromPreset(ofxKsmrStepPreset preset){
 
 	if (preset == KSMR_STEP_P_PMSA_B56D5){
 		setParam_maxSpeed(0x0075);
-		setParam_Accel(0x0070);
-		setParam_Decel(0x0070);
+		setParam_Accel(0x0010);
+		setParam_Decel(0x0010);
 		setMicroSteps(7);
+
+		unsigned char sig[2];
+
+		sig[0] = 0x0B;	sig[1] = 0x1F;
+		sendSPIPacketAll(sig, 2);
+
+		sig[0] = 0x0C;	sig[1] = 0x1F;
+		sendSPIPacketAll(sig, 2);
+
+		sig[0] = 0x09;	sig[1] = 0x1F;
+		sendSPIPacketAll(sig, 2);
+
+		sig[0] = 0x0A;	sig[1] = 0x1F;
+		sendSPIPacketAll(sig, 2);
 	}
 
 	if (preset == KSMR_STEP_SM_42BYG011_25){
@@ -415,25 +430,39 @@ void ofxKsmrStepManager::sendBytesOnline(unsigned char *buffer, int length){
 		ofxOscMessage m;
 		m.setAddress("/dp/hakoniwa/Ksmrmotor");
 
-		//上位8ビットにlength
-		//残り上位から順番にバイト列を格納
-		int32_t data  = 0;
-		data += (length << 24);
+		if (sendByteSimply){
+			m.addIntArg(length);
 
-		bool notAdd = false;
-		for (int i = 1;i < length + 1;i++){
-			data += buffer[i - 1] << (24 - 8 * i);
-			notAdd = true;
-
-			if (i % 4 == 3){
-				m.addIntArg(data);
-				data = 0;
-				notAdd = false;
+			for (int i = 0;i < length;i++){
+				m.addIntArg(int(buffer[i]));
 			}
-		}
-		if (notAdd) m.addIntArg(data);
 
-		sender.sendMessage(m);
+			sender.sendMessage(m);
+			
+		}else{
+
+			//上位8ビットにlength
+			//残り上位から順番にバイト列を格納
+			int32_t data  = 0;
+			data += (length << 24);
+
+			bool notAdd = false;
+			for (int i = 1;i < length + 1;i++){
+				data += buffer[i - 1] << (24 - 8 * i);
+				notAdd = true;
+
+				if (i % 4 == 3){
+					m.addIntArg(data);
+					data = 0;
+					notAdd = false;
+				}
+			}
+			if (notAdd) m.addIntArg(data);
+
+			
+			sender.sendMessage(m);
+
+		}
 	}
 
 }
