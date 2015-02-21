@@ -247,6 +247,7 @@ void ofxKsmrStepManager::move(int step, bool dir){
 	else	sig[0] = 0x41;
 
 	int val = step * pow(2.0f,microStepInv);
+
 	unsigned char data[3];
 	for (int i = 0;i < 3;i++){
 		data[i] = val & 0xFF;
@@ -325,6 +326,18 @@ void ofxKsmrStepManager::hardStop(){
 
 void ofxKsmrStepManager::gohome(){
 	sendSPIByteSelected(0x70);
+}
+
+int ofxKsmrStepManager::getDegToStep(float degree,int Ch){
+	float dg = steppers[Ch].getDegreePStep();
+
+	return degree / dg;
+}
+
+float ofxKsmrStepManager::getStepToDeg(int Step,int Ch){
+	float dg = steppers[Ch].getDegreePStep();
+
+	return Step * dg;
 }
 
 void ofxKsmrStepManager::setupEasyFromPreset(ofxKsmrStepPreset preset){

@@ -24,7 +24,7 @@ public:
 	float	getCurrentDegree();
 	int		getCurrentStep();
 	string	getName(){return Devname;};
-
+	float	getDegreePStep(){return dPStep;};
 	bool	sendEnable;
 
 private:
@@ -33,6 +33,7 @@ private:
 	int			offset;
 	int			currentStp;
 	int			numStp;
+	float		dPStep;
 	int			mySPICh;
 	string		Devname;
 };
