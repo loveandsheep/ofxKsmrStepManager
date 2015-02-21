@@ -22,6 +22,10 @@ void ofxKsmrStepManager::setup(int portNum, int baud){
 	serial.setup(portNum, baud);
 }
 
+void ofxKsmrStepManager::addStepper(int numStep){
+	addStepper("D", numStep, steppers.size());
+}
+
 void ofxKsmrStepManager::addStepper(string name, int numStep, int SPIch){
 
 	steppers.push_back( virtualSteppingMotor(name, numStep, SPIch) );
@@ -328,46 +332,26 @@ void ofxKsmrStepManager::setupEasyFromPreset(ofxKsmrStepPreset preset){
 	resetAllDevices();
 
 	if (preset == KSMR_STEP_P_PMSA_B56D5){
+
 		setParam_maxSpeed(0x0075);
 		setParam_Accel(0x0010);
 		setParam_Decel(0x0010);
 		setMicroSteps(7);
 
-		unsigned char sig[2];
+		setParam_kVal_all(0x1F);
 
-		sig[0] = 0x0B;	sig[1] = 0x1F;
-		sendSPIPacketAll(sig, 2);
-
-		sig[0] = 0x0C;	sig[1] = 0x1F;
-		sendSPIPacketAll(sig, 2);
-
-		sig[0] = 0x09;	sig[1] = 0x1F;
-		sendSPIPacketAll(sig, 2);
-
-		sig[0] = 0x0A;	sig[1] = 0x1F;
-		sendSPIPacketAll(sig, 2);
+		setMicroSteps(7);
 	}
 
 	if (preset == KSMR_STEP_SM_42BYG011_25){
-		setParam_maxSpeed(0x0025);
-		setParam_Accel(0x0041);
-		setParam_Decel(0x0041);
 
-		unsigned char sig[2];
+		setParam_maxSpeed(0x0030);
+		setParam_Accel(0x0020);
+		setParam_Decel(0x0020);
 
-		sig[0] = 0x0B;	sig[1] = 0xFF;
-		sendSPIPacketAll(sig, 2);
+		setParam_kVal_all(0xFF);
 
-		sig[0] = 0x0C;	sig[1] = 0xFF;
-		sendSPIPacketAll(sig, 2);
-
-		sig[0] = 0x09;	sig[1] = 0xFF;
-		sendSPIPacketAll(sig, 2);
-
-		sig[0] = 0x0A;	sig[1] = 0xFF;
-		sendSPIPacketAll(sig, 2);
-
-		setMicroSteps(0);
+		setMicroSteps(7);
 	}
 
 	absPos(0);
@@ -417,6 +401,55 @@ void ofxKsmrStepManager::setParam_Decel(int bit_12){
 	sig[2] = bit_12 & 0xFF;
 
 	sendSPIPacketAll(sig, 3);
+
+}
+
+void ofxKsmrStepManager::setParam_kVal_all(int bit_8){
+
+	setParam_kVal_Hold(bit_8);
+	setParam_kVal_Run(bit_8);
+	setParam_kVal_Acc(bit_8);
+	setParam_kVal_Dec(bit_8);
+
+}
+
+void ofxKsmrStepManager::setParam_kVal_Hold(int bit_8){
+
+	unsigned char sig[2];
+
+	sig[0] = 0x09;
+	sig[1] = bit_8;
+	sendSPIPacketAll(sig, 2);
+
+}
+
+void ofxKsmrStepManager::setParam_kVal_Run(int bit_8){
+
+	unsigned char sig[2];
+
+	sig[0] = 0x0A;
+	sig[1] = bit_8;
+	sendSPIPacketAll(sig, 2);
+
+}
+
+void ofxKsmrStepManager::setParam_kVal_Acc(int bit_8){
+
+	unsigned char sig[2];
+
+	sig[0] = 0x0B;
+	sig[1] = bit_8;
+	sendSPIPacketAll(sig, 2);
+
+}
+
+void ofxKsmrStepManager::setParam_kVal_Dec(int bit_8){
+
+	unsigned char sig[2];
+
+	sig[0] = 0x0C;
+	sig[1] = bit_8;
+	sendSPIPacketAll(sig, 2);
 
 }
 

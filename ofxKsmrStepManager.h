@@ -16,8 +16,8 @@
 #include "ofxOsc.h"
 
 enum ofxKsmrStepPreset{
-	KSMR_STEP_P_PMSA_B56D5, //ShinanoKenshi
-	KSMR_STEP_SM_42BYG011_25 //MERCURY MOTOR
+	KSMR_STEP_P_PMSA_B56D5,		//ShinanoKenshi
+	KSMR_STEP_SM_42BYG011_25	//MERCURY MOTOR
 };
 
 class ofxKsmrStepManager{
@@ -27,21 +27,39 @@ public:
 		sendByteSimply = false;
 	}
 
+	/*==== System Config ===*/
 	void setup(string portName,int baud);
 	void setup(int portNum, int baud);
 	void setupOsc(string address, int port);
 
+	void addStepper(int numStep);
 	void addStepper(string name,int numStep,int SPIch);
+
+	/*=== L6470 Config ===*/
+	void resetAllDevices();
 
 	void setupEasy();
 	void setupEasyFromPreset(ofxKsmrStepPreset preset);
 
-	void resetAllDevices();
+	void setMicroSteps		(int involution0to7);
+	void setParam_maxSpeed(int bit_10);
+	void setParam_minSpeed(int bit_13);
+	void setParam_Accel(int bit_12);
+	void setParam_Decel(int bit_12);
+	void setParam_AbsPos(int bit_22);
 
+	void setParam_kVal_all(int bit_8);
+	void setParam_kVal_Acc(int bit_8);
+	void setParam_kVal_Dec(int bit_8);
+	void setParam_kVal_Run(int bit_8);
+	void setParam_kVal_Hold(int bit_8);
+
+	/*=== Slave Select Flags ===*/
 	void selectStepperOne	(int ch,bool enable);
 	void setStepperAll		(bool enable);
 	void setStepperSingle	(int ch,bool enable);
 
+	/*=== SPI Translate ===*/
 	void sendSPIPacketAll		(unsigned char* bytes,int length);
 	void sendSPIPacketSelected	(unsigned char* bytes,int length);
 
@@ -51,6 +69,7 @@ public:
 	void sendSPIByteSingle	(unsigned char byte,int ch);
 	void sendSPIByteSelected(unsigned char byte);
 
+	/*=== moving Function ===*/
 	void absPos				(int pos);
 	void run				(int speed,bool dir);
 	void move				(int step,bool dir);
@@ -61,12 +80,6 @@ public:
 	void hardStop();
 	void gohome();
 
-	void setMicroSteps		(int involution0to7);
-	void setParam_maxSpeed(int bit_10);
-	void setParam_minSpeed(int bit_13);
-	void setParam_Accel(int bit_12);
-	void setParam_Decel(int bit_12);
-	void setParam_AbsPos(int bit_22);
 
 	int microStepInv;
 

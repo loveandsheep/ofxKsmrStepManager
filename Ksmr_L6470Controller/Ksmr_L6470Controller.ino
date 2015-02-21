@@ -4,7 +4,7 @@
 #define PIN_SPI_MOSI  11
 #define PIN_SPI_MISO  12
 #define PIN_SPI_SCK   13
-#define PIN_SPI_SS    8
+#define PIN_SPI_SS    10
 
 #define PHASE_IDLE 0
 #define PHASE_WAITNUMBYTE 1
