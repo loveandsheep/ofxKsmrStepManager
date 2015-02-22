@@ -8,14 +8,17 @@ void ofApp::setup(){
 
 	myMotor.addStepper(200);
 
+	myMotor.resetAllDevices();
+
 	ofSleepMillis(3000);
 
-	myMotor.resetAllDevices();
+	myMotor.setStepperAll(true);
 	myMotor.setParam_maxSpeed(30);
 	myMotor.setParam_kVal_all(0xFF);
 	myMotor.setParam_Accel(0x0050);
 	myMotor.setParam_Decel(0x0050);
-	myMotor.setMicroSteps(0);
+	myMotor.setMicroSteps(7);
+	myMotor.setStepperAll(false);
 
 }
 
