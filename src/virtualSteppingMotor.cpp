@@ -16,7 +16,7 @@ virtualSteppingMotor::virtualSteppingMotor(string name,int numStep,int SPICh){
 	currentStp		= 0;
 	offset			= 0;
 	sendEnable		= false;
-	dPStep			= 360 / numStep;
+	dPStep			= 360.0 / (float)numStep;
 }
 
 void virtualSteppingMotor::move(int step,bool dir){
