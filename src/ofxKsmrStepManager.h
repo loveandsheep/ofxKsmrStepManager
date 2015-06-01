@@ -60,14 +60,14 @@ public:
 	void setStepperSingle	(int ch,bool enable);
 
 	/*=== SPI Translate ===*/
-	void sendSPIPacketAll		(unsigned char* bytes,int length);
-	void sendSPIPacketSelected	(unsigned char* bytes,int length);
+	virtual void sendSPIPacketAll		(unsigned char* bytes,int length);
+	virtual void sendSPIPacketSelected	(unsigned char* bytes,int length);
 
-	void sendSPIMultiByte	(unsigned char* bytes,int length);
+	virtual void sendSPIMultiByte	(unsigned char* bytes,int length);
 
-	void sendSPIByteAll		(unsigned char byte);
-	void sendSPIByteSingle	(unsigned char byte,int ch);
-	void sendSPIByteSelected(unsigned char byte);
+	virtual void sendSPIByteAll		(unsigned char byte);
+	virtual void sendSPIByteSingle	(unsigned char byte,int ch);
+	virtual void sendSPIByteSelected(unsigned char byte);
 
 	/*=== moving Function ===*/
 	void absPos				(int pos);
@@ -75,7 +75,7 @@ public:
 	void move				(int step,bool dir);
 	void go_to				(int pos);
 
-	void multi_go_to		(int* pos);
+	virtual void multi_go_to		(int* pos);
 
 	void softStop();
 	void hardStop();
